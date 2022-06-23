@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "es6", // Ensures we get tree shaking with webpack
+    "module": "esnext", // Ensures we get tree shaking with webpack
+    "moduleResolution": "node",
     "strict": true,
+    "lib": ["dom", "DOM.Iterable", "ESNext"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

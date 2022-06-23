@@ -30,6 +30,20 @@ module.exports = {
           'sass-loader',
         ],
       },
+      {
+        test: /\.jsx?$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [['@babel/preset-env', { targets: 'defaults' }]],
+            plugins: [
+              '@babel/plugin-proposal-object-rest-spread',
+              '@babel/plugin-proposal-nullish-coalescing-operator',
+              '@babel/plugin-proposal-optional-chaining',
+            ],
+          },
+        },
+      },
     ],
   },
   resolve: {
@@ -45,12 +59,14 @@ module.exports = {
       template: path.resolve(__dirname, './src/index.html'),
     }),
     new ProgressBarPlugin(),
-    new CopyPlugin([
-      {
-        from: path.resolve(__dirname, './src/did-siop.min.js'),
-        to: path.resolve(__dirname, './dist/'),
-      },
-    ]),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, './src/did-siop.min.js'),
+          to: path.resolve(__dirname, './dist/'),
+        },
+      ],
+    }),
   ],
   output: {
     filename: '[name].bundle.js',
