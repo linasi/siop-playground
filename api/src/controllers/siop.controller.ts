@@ -34,6 +34,64 @@ class SIOPController {
     }
   };
 
+  public vprequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const rp = await this.getRP();
+      const siopRequest = await rp.generateRequest({
+        state: 'af0ifjsldkj',
+        nonce: 'n-0S6_WzA2Mj',
+        response_mode: 'form_post',
+        claims: {
+          id_token: {
+            email: null,
+          },
+          vp_token: {
+            presentation_definition: {
+              id: '16025723-28f9-4917-96df-af341304e604',
+              input_descriptors: [
+                {
+                  id: 'IdCredential',
+                  schema: [
+                    {
+                      uri: 'https://vc-schemas.meeco.me/credentials/id/1.0/schema.json',
+                    },
+                  ],
+                  name: 'Identity Credential',
+                  purpose: 'Identify you as a person',
+                },
+                {
+                  id: 'DriverLicenceCredential',
+                  schema: [
+                    {
+                      uri: 'https://vc-schemas.meeco.me/credentials/driverLicence/1.0/schema.json',
+                    },
+                  ],
+                  name: 'QLD Driver Licence - C (Car)',
+                  purpose: 'Ability to drive a car',
+                },
+              ],
+              name: 'The Government Department',
+              purpose: 'Onboarding documentation',
+            },
+            issuanceDate: '2022-06-01T11:16:50.731Z',
+            issuer: 'did:hedera:testnet:7gAbwFg2hi43N9v7awSs3pptTRwA4zNBgrmjfygLW77p;hedera:testnet:fid=0.0.78464',
+            recipient: 'sparker@fexpost.com',
+          },
+          proof: {
+            type: 'Ed25519Signature2018',
+            proofPurpose: 'assertionMethod',
+            verificationMethod: 'did:hedera:testnet:7gAbwFg2hi43N9v7awSs3pptTRwA4zNBgrmjfygLW77p;hedera:testnet:fid=0.0.78464',
+            signature: 'pg6aeAlFiFAPpd7HGVueYGiZfXmHWzy-rzBTcglhvltza19gUcG62EwMb1G2Rpwt27u3If4JnjjjVEUTtD90CA',
+          },
+        },
+      });
+
+      res.status(201).json({ request: siopRequest });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public callback = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const rp = await this.getRP();
