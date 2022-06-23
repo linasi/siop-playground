@@ -150,9 +150,9 @@ submitButton?.addEventListener('click', () => {
               },
             },
           })
-          .then((responseJWT: any) => {
+          .then((siopTokenEncoded: any) => {
             console.log('Response generated ...');
-            console.log('responseJWT', responseJWT);
+            console.log('siopTokenEncoded', siopTokenEncoded);
 
             fetch(decodedRequest.payload.redirect_uri, {
               method: 'POST',
@@ -161,7 +161,7 @@ submitButton?.addEventListener('click', () => {
                   'application/x-www-form-urlencoded;charset=UTF-8',
               },
               body: new URLSearchParams({
-                id_token: responseJWT,
+                siopTokenEncoded: JSON.stringify(siopTokenEncoded),
               }),
             });
           });

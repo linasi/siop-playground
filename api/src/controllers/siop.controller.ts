@@ -9,6 +9,8 @@ import { NextFunction, Request, Response } from 'express';
 
 const REDIRECT_URL = 'http://localhost:3000/callback';
 const DID = 'did:hedera:testnet:z6MkqtdoR96674Sdu8j22soPJwUETohdC51zbbxFGmFnhqT5_0.0.46045475';
+const NONCE = 'n-0S6_WzA2Mj';
+const STATE = 'af0ifjsldkj';
 
 /**
  * Universal resolver running locally
@@ -26,7 +28,7 @@ class SIOPController {
   public request = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const rp = await this.getRP();
-      const siopRequest = await rp.generateRequest();
+      const siopRequest = await rp.generateRequest({ state: STATE, nonce: NONCE, response_mode: 'form_post' });
 
       res.status(201).json({ request: siopRequest });
     } catch (error) {
@@ -38,8 +40,8 @@ class SIOPController {
     try {
       const rp = await this.getRP();
       const siopRequest = await rp.generateRequest({
-        state: 'af0ifjsldkj',
-        nonce: 'n-0S6_WzA2Mj',
+        state: STATE,
+        nonce: NONCE,
         response_mode: 'form_post',
         claims: {
           id_token: {
@@ -96,20 +98,29 @@ class SIOPController {
     try {
       const rp = await this.getRP();
 
-      if (!req.body.id_token) {
-        throw new Error('id_token param is missing');
+      if (req.body.siopTokenEncoded) {
+        const response = JSON.parse(req.body.siopTokenEncoded);
+        console.log(response);
+        const valid = await rp.validateResponseWithVPData(response, { redirect_uri: REDIRECT_URL, isExpirable: true, nonce: NONCE });
+        console.log('Response validated ...', valid);
+
+        if (!valid) {
+          throw new Error('id_token or vp_token is not valid');
+        }
+
+        res.status(201).json({ token: valid, result: 'valid' });
+      } else {
+        const response = req.body.id_token;
+        console.log(response);
+        const valid = await rp.validateResponse(response, { redirect_uri: REDIRECT_URL, isExpirable: true, nonce: NONCE });
+        console.log('Response validated ...', valid);
+
+        if (!valid) {
+          throw new Error('id_token is not valid');
+        }
+
+        res.status(201).json({ token: valid, result: 'valid' });
       }
-
-      console.log(req.body.id_token);
-
-      const valid = await rp.validateResponse(req.body.id_token);
-      console.log('Response validated ...', valid);
-
-      if (!valid) {
-        throw new Error('id_token token is not valid');
-      }
-
-      res.status(201).json({ id_token: req.body.id_token, result: 'valid' });
     } catch (error) {
       next(error);
     }
