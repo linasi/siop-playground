@@ -9,6 +9,8 @@ import { NextFunction, Request, Response } from 'express';
 
 const REDIRECT_URL = 'http://localhost:3000/callback';
 const DID = 'did:hedera:testnet:z6MkqtdoR96674Sdu8j22soPJwUETohdC51zbbxFGmFnhqT5_0.0.46045475';
+const NONCE = 'n-0S6_WzA2Mj';
+const STATE = 'af0ifjsldkj';
 
 /**
  * Universal resolver running locally
@@ -26,7 +28,65 @@ class SIOPController {
   public request = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const rp = await this.getRP();
-      const siopRequest = await rp.generateRequest();
+      const siopRequest = await rp.generateRequest({ state: STATE, nonce: NONCE, response_mode: 'form_post' });
+
+      res.status(201).json({ request: siopRequest });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public vprequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const rp = await this.getRP();
+      const siopRequest = await rp.generateRequest({
+        state: STATE,
+        nonce: NONCE,
+        response_mode: 'form_post',
+        claims: {
+          id_token: {
+            email: null,
+          },
+          vp_token: {
+            presentation_definition: {
+              id: '16025723-28f9-4917-96df-af341304e604',
+              input_descriptors: [
+                {
+                  id: 'IdCredential',
+                  schema: [
+                    {
+                      uri: 'https://vc-schemas.meeco.me/credentials/id/1.0/schema.json',
+                    },
+                  ],
+                  name: 'Identity Credential',
+                  purpose: 'Identify you as a person',
+                },
+                {
+                  id: 'DriverLicenceCredential',
+                  schema: [
+                    {
+                      uri: 'https://vc-schemas.meeco.me/credentials/driverLicence/1.0/schema.json',
+                    },
+                  ],
+                  name: 'QLD Driver Licence - C (Car)',
+                  purpose: 'Ability to drive a car',
+                },
+              ],
+              name: 'The Government Department',
+              purpose: 'Onboarding documentation',
+            },
+            issuanceDate: '2022-06-01T11:16:50.731Z',
+            issuer: 'did:hedera:testnet:7gAbwFg2hi43N9v7awSs3pptTRwA4zNBgrmjfygLW77p;hedera:testnet:fid=0.0.78464',
+            recipient: 'sparker@fexpost.com',
+          },
+          proof: {
+            type: 'Ed25519Signature2018',
+            proofPurpose: 'assertionMethod',
+            verificationMethod: 'did:hedera:testnet:7gAbwFg2hi43N9v7awSs3pptTRwA4zNBgrmjfygLW77p;hedera:testnet:fid=0.0.78464',
+            signature: 'pg6aeAlFiFAPpd7HGVueYGiZfXmHWzy-rzBTcglhvltza19gUcG62EwMb1G2Rpwt27u3If4JnjjjVEUTtD90CA',
+          },
+        },
+      });
 
       res.status(201).json({ request: siopRequest });
     } catch (error) {
@@ -38,20 +98,29 @@ class SIOPController {
     try {
       const rp = await this.getRP();
 
-      if (!req.body.id_token) {
-        throw new Error('id_token param is missing');
+      if (req.body.siopTokenEncoded) {
+        const response = JSON.parse(req.body.siopTokenEncoded);
+        console.log(response);
+        const valid = await rp.validateResponseWithVPData(response, { redirect_uri: REDIRECT_URL, isExpirable: true, nonce: NONCE });
+        console.log('Response validated ...', valid);
+
+        if (!valid) {
+          throw new Error('id_token or vp_token is not valid');
+        }
+
+        res.status(201).json({ token: valid, result: 'valid' });
+      } else {
+        const response = req.body.id_token;
+        console.log(response);
+        const valid = await rp.validateResponse(response, { redirect_uri: REDIRECT_URL, isExpirable: true, nonce: NONCE });
+        console.log('Response validated ...', valid);
+
+        if (!valid) {
+          throw new Error('id_token is not valid');
+        }
+
+        res.status(201).json({ token: valid, result: 'valid' });
       }
-
-      console.log(req.body.id_token);
-
-      const valid = await rp.validateResponse(req.body.id_token);
-      console.log('Response validated ...', valid);
-
-      if (!valid) {
-        throw new Error('id_token token is not valid');
-      }
-
-      res.status(201).json({ id_token: req.body.id_token, result: 'valid' });
     } catch (error) {
       next(error);
     }

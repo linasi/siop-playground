@@ -13,6 +13,7 @@ class SIOPRoute implements Routes {
 
   private initializeRoutes() {
     this.router.get(`${this.path}request`, this.siopController.request);
+    this.router.get(`${this.path}vprequest`, this.siopController.vprequest);
     this.router.post(`${this.path}callback`, this.siopController.callback);
   }
 }
