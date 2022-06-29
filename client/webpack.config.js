@@ -2,7 +2,6 @@ const path = require('path');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.ts',
@@ -59,14 +58,6 @@ module.exports = {
       template: path.resolve(__dirname, './src/index.html'),
     }),
     new ProgressBarPlugin(),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, './src/did-siop.min.js'),
-          to: path.resolve(__dirname, './dist/'),
-        },
-      ],
-    }),
   ],
   output: {
     filename: '[name].bundle.js',

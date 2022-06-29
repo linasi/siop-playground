@@ -24,6 +24,7 @@ export const PROVIDER_DID = {
 };
 
 export const TEST_VP = {
+  _vp_token: null,
   vp_token: {
     proof: {
       type: 'Ed25519Signature2018',

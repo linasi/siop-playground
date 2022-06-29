@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ALGORITHMS, DidDocument, KEY_FORMATS, Resolvers, RP } from 'did-siop';
+import { DidDocument, Resolvers, RP } from 'did-siop';
 import { NextFunction, Request, Response } from 'express';
 
 // RP:
@@ -140,12 +140,7 @@ class SIOPController {
       new LocalUniResolver('uniresolver'),
     ]);
 
-    this.rp.addSigningParams(
-      'ZLFdNOwmPGC5siyAT8ZdZIrrKrQi0hv6B1lwsJ0i+BQ=', // 302e020100300506032b65700422042064b15d34ec263c60b9b22c804fc65d648aeb2ab422d21bfa075970b09d22f814 formated to base64
-      'did:hedera:testnet:z6MkqtdoR96674Sdu8j22soPJwUETohdC51zbbxFGmFnhqT5_0.0.46045475#did-root-key',
-      KEY_FORMATS.BASE64,
-      ALGORITHMS.EdDSA,
-    );
+    this.rp.addSigningParams('ZLFdNOwmPGC5siyAT8ZdZIrrKrQi0hv6B1lwsJ0i+BQ='); // 302e020100300506032b65700422042064b15d34ec263c60b9b22c804fc65d648aeb2ab422d21bfa075970b09d22f814 formated to base64
 
     return this.rp;
   }
